@@ -7,6 +7,7 @@ import {
   getTwoPageSampleData,
   ensureCvDataDefaults,
 } from './data/sampleData';
+import { parsePdfInBrowser } from './utils/pdfParser';
 import { FormEditor } from './components/FormEditor';
 import { ResumePreview } from './components/ResumePreview';
 import { WelcomeModal } from './components/WelcomeModal';
@@ -198,7 +199,7 @@ export default function App() {
   };
 
   // Handle PDF Resume Upload & Parsing
-  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -210,43 +211,64 @@ export default function App() {
     setIsParsingPdf(true);
     setParseMessage(null);
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
+    try {
+      let parsedCvData: CvData | null = null;
+
+      // 1. Try server API first (if backend with Gemini/PDF parser is reachable)
       try {
-        const base64Data = event.target?.result as string;
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
         const response = await fetch('/api/ai/parse-pdf-resume', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ base64Pdf: base64Data }),
         });
 
-        const result = await response.json();
-        if (result.success && result.data && result.data.header) {
-          setActiveData(ensureCvDataDefaults(result.data));
-          setParseMessage({
-            type: 'success',
-            text: 'Resume details extracted and autofilled from PDF!',
-          });
-        } else {
-          setParseMessage({
-            type: 'error',
-            text: result.error || 'Unable to extract information from the uploaded PDF.',
-          });
+        if (response.ok) {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const result = await response.json();
+            if (result.success && result.data && result.data.header) {
+              parsedCvData = ensureCvDataDefaults(result.data);
+            }
+          }
         }
-      } catch (err: any) {
-        console.error('PDF parsing error:', err);
+      } catch (serverErr) {
+        console.warn('Server API unavailable, switching to browser-side PDF parsing:', serverErr);
+      }
+
+      // 2. Fall back to direct browser PDF parsing if server API is unavailable/returns 404 (e.g. Vercel static host)
+      if (!parsedCvData) {
+        parsedCvData = await parsePdfInBrowser(file);
+      }
+
+      if (parsedCvData && parsedCvData.header) {
+        setActiveData(ensureCvDataDefaults(parsedCvData));
+        setParseMessage({
+          type: 'success',
+          text: 'Resume details extracted and autofilled successfully from PDF!',
+        });
+      } else {
         setParseMessage({
           type: 'error',
-          text: 'An error occurred while uploading and analyzing your PDF.',
+          text: 'Unable to extract information from the uploaded PDF.',
         });
-      } finally {
-        setIsParsingPdf(false);
-        // Clear input value so the same file can be re-uploaded if desired
-        e.target.value = '';
       }
-    };
-
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      console.error('PDF parsing error:', err);
+      setParseMessage({
+        type: 'error',
+        text: err?.message || 'An error occurred while uploading and analyzing your PDF.',
+      });
+    } finally {
+      setIsParsingPdf(false);
+      e.target.value = '';
+    }
   };
 
   return (
