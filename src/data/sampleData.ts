@@ -272,3 +272,60 @@ export const twoPageSampleData: CvData = {
     },
   ],
 };
+
+export const getOnePageSampleData = (): CvData => {
+  return JSON.parse(JSON.stringify(onePageSampleData));
+};
+
+export const getTwoPageSampleData = (): CvData => {
+  return JSON.parse(JSON.stringify(twoPageSampleData));
+};
+
+export const ensureCvDataDefaults = (raw: any): CvData => {
+  if (!raw || typeof raw !== 'object') {
+    return getOnePageSampleData();
+  }
+  const cloned = JSON.parse(JSON.stringify(raw));
+  return {
+    header: {
+      name: cloned?.header?.name || '',
+      ugYear: cloned?.header?.ugYear || '',
+      college: cloned?.header?.college || '',
+      dob: cloned?.header?.dob || '',
+      email: cloned?.header?.email || '',
+      enrollmentNo: cloned?.header?.enrollmentNo || '',
+      department: cloned?.header?.department || '',
+      gender: cloned?.header?.gender || '',
+      specialization: cloned?.header?.specialization || '',
+      mobile: cloned?.header?.mobile || '',
+      logoUrl: cloned?.header?.logoUrl || 'https://www.sgsits.ac.in/assets/be1c60d2202eb5c28d7de018f5546a7b65312d26-B4a0U3sN.png',
+      showLogo: cloned?.header?.showLogo !== undefined ? cloned.header.showLogo : true,
+    },
+    educationHeaders: {
+      ...defaultEducationHeaders,
+      ...(cloned?.educationHeaders || {}),
+    },
+    sectionTitles: {
+      ...defaultSectionTitles,
+      ...(cloned?.sectionTitles || {}),
+    },
+    education: Array.isArray(cloned?.education) ? cloned.education : [],
+    achievements: Array.isArray(cloned?.achievements) ? cloned.achievements : [],
+    experience: Array.isArray(cloned?.experience) ? cloned.experience : [],
+    projects: Array.isArray(cloned?.projects) ? cloned.projects : [],
+    skills: {
+      os: cloned?.skills?.os || '',
+      programming: cloned?.skills?.programming || '',
+      web: cloned?.skills?.web || '',
+      software: cloned?.skills?.software || '',
+      osLabel: cloned?.skills?.osLabel || 'Operating Systems',
+      programmingLabel: cloned?.skills?.programmingLabel || 'Programming Languages',
+      webLabel: cloned?.skills?.webLabel || 'Web Technologies',
+      softwareLabel: cloned?.skills?.softwareLabel || 'Tools & Software',
+    },
+    coreCourses: Array.isArray(cloned?.coreCourses) ? cloned.coreCourses : [],
+    breadthCourses: Array.isArray(cloned?.breadthCourses) ? cloned.breadthCourses : [],
+    positions: Array.isArray(cloned?.positions) ? cloned.positions : [],
+    extracurricular: Array.isArray(cloned?.extracurricular) ? cloned.extracurricular : [],
+  };
+};

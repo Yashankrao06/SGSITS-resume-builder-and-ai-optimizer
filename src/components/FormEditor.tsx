@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CvData, CvMode } from '../types';
+import { defaultEducationHeaders, defaultSectionTitles } from '../data/sampleData';
 import {
   User,
   GraduationCap,
@@ -63,21 +64,21 @@ export const FormEditor: React.FC<FormEditorProps> = ({
   const updateHeader = (field: keyof CvData['header'], value: any) => {
     onChange({
       ...data,
-      header: { ...data.header, [field]: value },
+      header: { ...(data.header || {}), [field]: value },
     });
   };
 
   const updateSectionTitle = (key: keyof CvData['sectionTitles'], value: string) => {
     onChange({
       ...data,
-      sectionTitles: { ...data.sectionTitles, [key]: value },
+      sectionTitles: { ...(data.sectionTitles || defaultSectionTitles), [key]: value },
     });
   };
 
   const updateEducationHeader = (key: keyof CvData['educationHeaders'], value: string) => {
     onChange({
       ...data,
-      educationHeaders: { ...data.educationHeaders, [key]: value },
+      educationHeaders: { ...(data.educationHeaders || defaultEducationHeaders), [key]: value },
     });
   };
 
@@ -111,7 +112,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Education Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.education}
+                    value={data.sectionTitles?.education || ''}
                     onChange={(e) => updateSectionTitle('education', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -120,7 +121,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Achievements Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.achievements}
+                    value={data.sectionTitles?.achievements || ''}
                     onChange={(e) => updateSectionTitle('achievements', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -129,7 +130,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Work Experience Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.experience}
+                    value={data.sectionTitles?.experience || ''}
                     onChange={(e) => updateSectionTitle('experience', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -138,7 +139,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Projects Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.projects}
+                    value={data.sectionTitles?.projects || ''}
                     onChange={(e) => updateSectionTitle('projects', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -149,7 +150,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                       <label className="block text-muted-foreground mb-1">Academic Projects Heading</label>
                       <input
                         type="text"
-                        value={data.sectionTitles.academicProjects}
+                        value={data.sectionTitles?.academicProjects || ''}
                         onChange={(e) => updateSectionTitle('academicProjects', e.target.value)}
                         className="w-full p-2 border border-input rounded bg-background text-foreground"
                       />
@@ -158,7 +159,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                       <label className="block text-muted-foreground mb-1">Technical Projects Heading</label>
                       <input
                         type="text"
-                        value={data.sectionTitles.technicalProjects}
+                        value={data.sectionTitles?.technicalProjects || ''}
                         onChange={(e) => updateSectionTitle('technicalProjects', e.target.value)}
                         className="w-full p-2 border border-input rounded bg-background text-foreground"
                       />
@@ -169,7 +170,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Skills Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.skills}
+                    value={data.sectionTitles?.skills || ''}
                     onChange={(e) => updateSectionTitle('skills', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -179,7 +180,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                     <label className="block text-muted-foreground mb-1">Courses Title</label>
                     <input
                       type="text"
-                      value={data.sectionTitles.courses}
+                      value={data.sectionTitles?.courses || ''}
                       onChange={(e) => updateSectionTitle('courses', e.target.value)}
                       className="w-full p-2 border border-input rounded bg-background text-foreground"
                     />
@@ -189,7 +190,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Positions Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.positions}
+                    value={data.sectionTitles?.positions || ''}
                     onChange={(e) => updateSectionTitle('positions', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -198,7 +199,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-muted-foreground mb-1">Extracurricular Title</label>
                   <input
                     type="text"
-                    value={data.sectionTitles.extracurricular}
+                    value={data.sectionTitles?.extracurricular || ''}
                     onChange={(e) => updateSectionTitle('extracurricular', e.target.value)}
                     className="w-full p-2 border border-input rounded bg-background text-foreground"
                   />
@@ -213,7 +214,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-[11px] text-muted-foreground">Col 1 Header</label>
                   <input
                     type="text"
-                    value={data.educationHeaders.degree}
+                    value={data.educationHeaders?.degree || ''}
                     onChange={(e) => updateEducationHeader('degree', e.target.value)}
                     className="w-full p-1.5 border border-input rounded bg-background text-foreground"
                   />
@@ -222,7 +223,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-[11px] text-muted-foreground">Col 2 Header</label>
                   <input
                     type="text"
-                    value={data.educationHeaders.university}
+                    value={data.educationHeaders?.university || ''}
                     onChange={(e) => updateEducationHeader('university', e.target.value)}
                     className="w-full p-1.5 border border-input rounded bg-background text-foreground"
                   />
@@ -231,7 +232,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-[11px] text-muted-foreground">Col 3 Header</label>
                   <input
                     type="text"
-                    value={data.educationHeaders.institute}
+                    value={data.educationHeaders?.institute || ''}
                     onChange={(e) => updateEducationHeader('institute', e.target.value)}
                     className="w-full p-1.5 border border-input rounded bg-background text-foreground"
                   />
@@ -240,7 +241,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-[11px] text-muted-foreground">Col 4 Header</label>
                   <input
                     type="text"
-                    value={data.educationHeaders.year}
+                    value={data.educationHeaders?.year || ''}
                     onChange={(e) => updateEducationHeader('year', e.target.value)}
                     className="w-full p-1.5 border border-input rounded bg-background text-foreground"
                   />
@@ -249,7 +250,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                   <label className="block text-[11px] text-muted-foreground">Col 5 Header</label>
                   <input
                     type="text"
-                    value={data.educationHeaders.score}
+                    value={data.educationHeaders?.score || ''}
                     onChange={(e) => updateEducationHeader('score', e.target.value)}
                     className="w-full p-1.5 border border-input rounded bg-background text-foreground"
                   />
@@ -274,7 +275,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Full Name</label>
             <input
               type="text"
-              value={data.header.name}
+              value={data.header?.name || ''}
               onChange={(e) => updateHeader('name', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -283,7 +284,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">UG Year / Status</label>
             <input
               type="text"
-              value={data.header.ugYear}
+              value={data.header?.ugYear || ''}
               onChange={(e) => updateHeader('ugYear', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -292,7 +293,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">College / University</label>
             <input
               type="text"
-              value={data.header.college}
+              value={data.header?.college || ''}
               onChange={(e) => updateHeader('college', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -301,7 +302,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Date of Birth</label>
             <input
               type="text"
-              value={data.header.dob}
+              value={data.header?.dob || ''}
               onChange={(e) => updateHeader('dob', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -310,7 +311,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Email Address</label>
             <input
               type="text"
-              value={data.header.email}
+              value={data.header?.email || ''}
               onChange={(e) => updateHeader('email', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -319,7 +320,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Enrollment / Roll No.</label>
             <input
               type="text"
-              value={data.header.enrollmentNo}
+              value={data.header?.enrollmentNo || ''}
               onChange={(e) => updateHeader('enrollmentNo', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -328,7 +329,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Department</label>
             <input
               type="text"
-              value={data.header.department}
+              value={data.header?.department || ''}
               onChange={(e) => updateHeader('department', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -337,7 +338,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Gender</label>
             <input
               type="text"
-              value={data.header.gender}
+              value={data.header?.gender || ''}
               onChange={(e) => updateHeader('gender', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -346,7 +347,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Specialization</label>
             <input
               type="text"
-              value={data.header.specialization}
+              value={data.header?.specialization || ''}
               onChange={(e) => updateHeader('specialization', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -355,7 +356,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
             <label className="text-xs text-muted-foreground mb-1.5 block font-medium">Mobile Number</label>
             <input
               type="text"
-              value={data.header.mobile}
+              value={data.header?.mobile || ''}
               onChange={(e) => updateHeader('mobile', e.target.value)}
               className="w-full p-2 border border-input rounded bg-background text-foreground"
             />
@@ -525,7 +526,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({
                     })
                   }
                   className="p-2 bg-purple-100 hover:bg-purple-200 text-purple-800 rounded shrink-0"
-                  title="AI Polish"
+                  title="Enhance text"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                 </button>

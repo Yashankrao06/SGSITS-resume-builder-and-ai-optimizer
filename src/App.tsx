@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CvData, CvMode } from './types';
-import { onePageSampleData, twoPageSampleData } from './data/sampleData';
+import {
+  onePageSampleData,
+  twoPageSampleData,
+  getOnePageSampleData,
+  getTwoPageSampleData,
+  ensureCvDataDefaults,
+} from './data/sampleData';
 import { FormEditor } from './components/FormEditor';
 import { ResumePreview } from './components/ResumePreview';
-import { AiEnhancerModal } from './components/AiEnhancerModal';
+import { WelcomeModal } from './components/WelcomeModal';
 import {
   FileText,
   Files,
   Printer,
   Trash2,
-  Sparkles,
   Download,
   Upload,
   CheckCircle2,
@@ -18,9 +23,14 @@ import {
   ZoomOut,
   Maximize2,
   GraduationCap,
-  Sparkle,
   Linkedin,
-  ExternalLink
+  ExternalLink,
+  Loader2,
+  FileUp,
+  AlertCircle,
+  HelpCircle,
+  Sparkles,
+  RotateCcw
 } from 'lucide-react';
 
 const STORAGE_KEYS: Record<CvMode, string> = {
@@ -34,33 +44,31 @@ function loadStoredData(mode: CvMode, fallback: CvData): CvData {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.header) {
-        return parsed;
+        return ensureCvDataDefaults(parsed);
       }
     }
   } catch (e) {
     console.error('Error reading localStorage for mode:', mode, e);
   }
-  return fallback;
+  return ensureCvDataDefaults(fallback);
 }
 
 export default function App() {
   const [cvMode, setCvMode] = useState<CvMode>('1page');
   const [zoomLevel, setZoomLevel] = useState<number>(0.9);
 
-  // Independent state for 1-Page and 2-Page CV data
+  // Initialize state with fresh default sample data on every reload
   const [onePageData, setOnePageData] = useState<CvData>(() =>
-    loadStoredData('1page', onePageSampleData)
+    getOnePageSampleData()
   );
   const [twoPageData, setTwoPageData] = useState<CvData>(() =>
-    loadStoredData('2page', twoPageSampleData)
+    getTwoPageSampleData()
   );
 
   const [isSaved, setIsSaved] = useState(true);
-  const [showAiModal, setShowAiModal] = useState(false);
-  const [selectedBulletToEnhance, setSelectedBulletToEnhance] = useState<{
-    text: string;
-    callback: (enhanced: string) => void;
-  } | null>(null);
+  const [isParsingPdf, setIsParsingPdf] = useState(false);
+  const [parseMessage, setParseMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(true);
 
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -132,20 +140,22 @@ export default function App() {
     printWindow.document.close();
   }, [cvMode, activeData]);
 
-  // Clear current CV data
+  // Clear current CV data back to default template
   const handleClear = () => {
     if (
       window.confirm(
-        `Clear all data for the ${cvMode === '1page' ? '1-Page' : '2-Page'} CV? This cannot be undone.`
+        `Reset all data back to the default sample template? Any unsaved edits will be cleared.`
       )
     ) {
-      if (cvMode === '1page') {
-        setOnePageData(onePageSampleData);
+      setOnePageData(getOnePageSampleData());
+      setTwoPageData(getTwoPageSampleData());
+      try {
         localStorage.removeItem(STORAGE_KEYS['1page']);
-      } else {
-        setTwoPageData(twoPageSampleData);
         localStorage.removeItem(STORAGE_KEYS['2page']);
+      } catch (e) {
+        console.error('Failed to clear localStorage', e);
       }
+      setParseMessage({ type: 'success', text: 'Reset to default template values!' });
     }
   };
 
@@ -174,7 +184,8 @@ export default function App() {
         try {
           const parsed = JSON.parse(event.target?.result as string);
           if (parsed && parsed.header) {
-            setActiveData(parsed);
+            setActiveData(ensureCvDataDefaults(parsed));
+            setParseMessage({ type: 'success', text: 'CV JSON loaded successfully!' });
           } else {
             alert('Invalid CV JSON format.');
           }
@@ -184,6 +195,58 @@ export default function App() {
       };
       reader.readAsText(file);
     }
+  };
+
+  // Handle PDF Resume Upload & Parsing
+  const handlePdfUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Please upload a valid PDF resume file.');
+      return;
+    }
+
+    setIsParsingPdf(true);
+    setParseMessage(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const base64Data = event.target?.result as string;
+        const response = await fetch('/api/ai/parse-pdf-resume', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64Pdf: base64Data }),
+        });
+
+        const result = await response.json();
+        if (result.success && result.data && result.data.header) {
+          setActiveData(ensureCvDataDefaults(result.data));
+          setParseMessage({
+            type: 'success',
+            text: 'Resume details extracted and autofilled from PDF!',
+          });
+        } else {
+          setParseMessage({
+            type: 'error',
+            text: result.error || 'Unable to extract information from the uploaded PDF.',
+          });
+        }
+      } catch (err: any) {
+        console.error('PDF parsing error:', err);
+        setParseMessage({
+          type: 'error',
+          text: 'An error occurred while uploading and analyzing your PDF.',
+        });
+      } finally {
+        setIsParsingPdf(false);
+        // Clear input value so the same file can be re-uploaded if desired
+        e.target.value = '';
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -201,14 +264,14 @@ export default function App() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-extrabold tracking-tight text-slate-900">
-                  SGSITS Academic Resume Studio
+                  Academic Resume Builder
                 </h1>
                 <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300/80 rounded-full">
                   Official Format
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 font-medium">
-                Live A4 Academic CV Canvas with Official SGSITS Crest & AI Assistance
+                Live A4 Academic CV Canvas with PDF Resume Autofill & Live Preview
               </p>
             </div>
           </div>
@@ -256,17 +319,37 @@ export default function App() {
               )}
             </div>
 
-            {/* AI Assistant Button */}
+            {/* Upload PDF Resume Button */}
+            <label
+              className={`px-3.5 py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+                isParsingPdf ? 'opacity-80 pointer-events-none' : ''
+              }`}
+              title="Upload your existing resume PDF to auto-extract details"
+            >
+              {isParsingPdf ? (
+                <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+              ) : (
+                <FileUp className="w-3.5 h-3.5 text-blue-200" />
+              )}
+              <span>{isParsingPdf ? 'Parsing PDF CV...' : 'Upload PDF Resume'}</span>
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={handlePdfUpload}
+                disabled={isParsingPdf}
+                className="hidden"
+              />
+            </label>
+
+            {/* Features & Guide Info Modal Trigger */}
             <button
               type="button"
-              onClick={() => {
-                setSelectedBulletToEnhance(null);
-                setShowAiModal(true);
-              }}
-              className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs"
+              onClick={() => setShowWelcomeModal(true)}
+              className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all border border-amber-200/80 shadow-2xs"
+              title="View Features & Quick Start Guide"
             >
-              <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
-              <span>AI Optimizer</span>
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span className="hidden lg:inline">Features</span>
             </button>
 
             {/* Export JSON */}
@@ -277,24 +360,25 @@ export default function App() {
               title="Export resume as JSON backup"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden md:inline">Export</span>
+              <span className="hidden md:inline">Export JSON</span>
             </button>
 
             {/* Import JSON */}
             <label className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border border-slate-300 shadow-2xs cursor-pointer" title="Import resume JSON file">
               <Upload className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden md:inline">Import</span>
+              <span className="hidden md:inline">Import JSON</span>
               <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
             </label>
 
-            {/* Clear button */}
+            {/* Reset Defaults button */}
             <button
               type="button"
               onClick={handleClear}
-              className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-200"
-              title="Reset sample data"
+              className="px-2.5 py-1.5 bg-white hover:bg-rose-50 text-slate-700 hover:text-rose-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border border-slate-300 hover:border-rose-300 shadow-2xs"
+              title="Reset all fields back to default sample template"
             >
-              <Trash2 className="w-4 h-4" />
+              <RotateCcw className="w-3.5 h-3.5 text-slate-500 hover:text-rose-600" />
+              <span className="hidden md:inline">Reset Defaults</span>
             </button>
 
             {/* Download PDF button */}
@@ -310,6 +394,31 @@ export default function App() {
 
         </div>
       </header>
+
+      {/* PARSE NOTIFICATION BANNER */}
+      {parseMessage && (
+        <div
+          className={`w-full py-2 px-4 text-xs font-semibold text-center flex items-center justify-center gap-2 border-b transition-all ${
+            parseMessage.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border-rose-200'
+          }`}
+        >
+          {parseMessage.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          ) : (
+            <AlertCircle className="w-4 h-4 text-rose-600" />
+          )}
+          <span>{parseMessage.text}</span>
+          <button
+            type="button"
+            onClick={() => setParseMessage(null)}
+            className="ml-3 text-slate-400 hover:text-slate-600 text-xs font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* MAIN WORKSPACE GRID */}
       <main className="max-w-[1536px] w-full mx-auto px-4 py-4 flex-1">
@@ -334,10 +443,6 @@ export default function App() {
                 data={activeData}
                 onChange={setActiveData}
                 type={cvMode}
-                onEnhanceBullet={(text, callback) => {
-                  setSelectedBulletToEnhance({ text, callback });
-                  setShowAiModal(true);
-                }}
               />
             </div>
           </div>
@@ -428,24 +533,13 @@ export default function App() {
         </a>
       </footer>
 
-      {/* AI ENHANCER MODAL */}
-      {showAiModal && (
-        <AiEnhancerModal
-          initialBullet={selectedBulletToEnhance?.text || ''}
-          resumeData={activeData as any}
-          onApplyBullet={(enhancedText) => {
-            if (selectedBulletToEnhance?.callback) {
-              selectedBulletToEnhance.callback(enhancedText);
-            }
-          }}
-          onClose={() => {
-            setShowAiModal(false);
-            setSelectedBulletToEnhance(null);
-          }}
-        />
+      {/* WELCOME FEATURES POPUP MODAL */}
+      {showWelcomeModal && (
+        <WelcomeModal onClose={() => setShowWelcomeModal(false)} />
       )}
 
     </div>
   );
 }
+
 

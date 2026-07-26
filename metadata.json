@@ -1,6 +1,6 @@
 {
   "name": "Academic Resume Builder",
-  "description": "A full-featured 2-page academic and professional resume builder with live A4 preview, dynamic form editing, PDF export, and AI assistance.",
+  "description": "A full-featured 2-page academic and professional resume builder with live A4 preview, dynamic form editing, PDF export, and automated resume parsing.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

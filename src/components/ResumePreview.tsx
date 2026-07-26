@@ -150,8 +150,8 @@ export const HeaderView: React.FC<{ data: CvData['header']; onClick?: () => void
 
 export const EducationTable: React.FC<{
   education: CvData['education'];
-  headers: CvData['educationHeaders'];
-}> = ({ education, headers }) => (
+  headers?: CvData['educationHeaders'];
+}> = ({ education = [], headers }) => (
   <div>
     <div
       style={{
@@ -164,12 +164,12 @@ export const EducationTable: React.FC<{
         marginBottom: '2.5pt',
       }}
     >
-      <div style={{ width: '18%' }}>{headers.degree || 'Degree / Certificate'}</div>
-      <div style={{ width: '20%' }}>{headers.university || 'University / Board'}</div>
-      <div style={{ width: '28%' }}>{headers.institute || 'Institute / School'}</div>
-      <div style={{ width: '16%' }}>{headers.year || 'Year of Passing'}</div>
+      <div style={{ width: '18%' }}>{headers?.degree || 'Degree / Certificate'}</div>
+      <div style={{ width: '20%' }}>{headers?.university || 'University / Board'}</div>
+      <div style={{ width: '28%' }}>{headers?.institute || 'Institute / School'}</div>
+      <div style={{ width: '16%' }}>{headers?.year || 'Year of Passing'}</div>
       <div style={{ width: '18%', textAlign: 'right' }}>
-        {headers.score || 'CGPA / Percentage'}
+        {headers?.score || 'CGPA / Percentage'}
       </div>
     </div>
     {education.map((item) => (
@@ -367,18 +367,18 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
 }) => {
   const {
     header,
-    education,
+    education = [],
     educationHeaders,
-    achievements,
-    experience,
-    projects,
-    skills,
-    positions,
-    extracurricular,
+    achievements = [],
+    experience = [],
+    projects = [],
+    skills = { os: '', programming: '', web: '', software: '' },
+    positions = [],
+    extracurricular = [],
     sectionTitles,
-  } = data;
+  } = data || {};
 
-  const hasSkills = skills.os || skills.programming || skills.web || skills.software;
+  const hasSkills = Boolean(skills?.os || skills?.programming || skills?.web || skills?.software);
 
   return (
     <CvPage isOnePage={true}>
@@ -387,7 +387,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {education && education.length > 0 && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('education')}>
-            {sectionTitles.education || 'Academic Details'}
+            {sectionTitles?.education || 'Academic Details'}
           </SectionHeading>
           <EducationTable education={education} headers={educationHeaders} />
         </>
@@ -396,7 +396,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {achievements && achievements.filter(Boolean).length > 0 && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('achievements')}>
-            {sectionTitles.achievements || 'Scholastic Achievements'}
+            {sectionTitles?.achievements || 'Scholastic Achievements'}
           </SectionHeading>
           <BulletList items={achievements} />
         </>
@@ -405,7 +405,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {experience && experience.length > 0 && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('experience')}>
-            {sectionTitles.experience || 'Work Experience'}
+            {sectionTitles?.experience || 'Work Experience'}
           </SectionHeading>
           <ExperienceList entries={experience} />
         </>
@@ -414,7 +414,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {projects && projects.length > 0 && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('projects')}>
-            {sectionTitles.projects || 'Projects'}
+            {sectionTitles?.projects || 'Projects'}
           </SectionHeading>
           <ProjectsList projects={projects} />
         </>
@@ -423,7 +423,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {hasSkills && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('skills')}>
-            {sectionTitles.skills || 'Platforms Worked'}
+            {sectionTitles?.skills || 'Platforms Worked'}
           </SectionHeading>
           <SkillsView skills={skills} type="1page" />
         </>
@@ -432,7 +432,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {positions && positions.length > 0 && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('positions')}>
-            {sectionTitles.positions || 'Positions of Responsibility'}
+            {sectionTitles?.positions || 'Positions of Responsibility'}
           </SectionHeading>
           <SimpleEntriesList entries={positions} />
         </>
@@ -441,7 +441,7 @@ export const OnePageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
       {extracurricular && extracurricular.length > 0 && (
         <>
           <SectionHeading onClick={() => onSectionClick && onSectionClick('extracurricular')}>
-            {sectionTitles.extracurricular || 'Extracurricular Activities'}
+            {sectionTitles?.extracurricular || 'Extracurricular Activities'}
           </SectionHeading>
           <SimpleEntriesList entries={extracurricular} />
         </>
@@ -457,20 +457,20 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
 }) => {
   const {
     header,
-    education,
+    education = [],
     educationHeaders,
-    achievements,
-    experience,
-    projects,
-    skills,
-    coreCourses,
-    breadthCourses,
-    positions,
-    extracurricular,
+    achievements = [],
+    experience = [],
+    projects = [],
+    skills = { os: '', programming: '', web: '', software: '' },
+    coreCourses = [],
+    breadthCourses = [],
+    positions = [],
+    extracurricular = [],
     sectionTitles,
-  } = data;
+  } = data || {};
 
-  const hasSkills = skills.os || skills.programming || skills.web || skills.software;
+  const hasSkills = Boolean(skills?.os || skills?.programming || skills?.web || skills?.software);
   const hasAcademicProjects = projects.some((p) => p.type === 'academic');
   const hasTechnicalProjects = projects.some((p) => p.type === 'technical');
   const hasCourses =
@@ -486,7 +486,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {education && education.length > 0 && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('education')}>
-              {sectionTitles.education || 'Academic Details'}
+              {sectionTitles?.education || 'Academic Details'}
             </SectionHeading>
             <EducationTable education={education} headers={educationHeaders} />
           </>
@@ -495,7 +495,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {achievements && achievements.filter(Boolean).length > 0 && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('achievements')}>
-              {sectionTitles.achievements || 'Scholastic Achievements'}
+              {sectionTitles?.achievements || 'Scholastic Achievements'}
             </SectionHeading>
             <BulletList items={achievements} />
           </>
@@ -504,7 +504,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {experience && experience.length > 0 && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('experience')}>
-              {sectionTitles.experience || 'Work Experience'}
+              {sectionTitles?.experience || 'Work Experience'}
             </SectionHeading>
             <ExperienceList entries={experience} />
           </>
@@ -513,7 +513,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {hasAcademicProjects && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('projects')}>
-              {sectionTitles.academicProjects || 'Academic Projects'}
+              {sectionTitles?.academicProjects || 'Academic Projects'}
             </SectionHeading>
             <ProjectsList projects={projects} filterType="academic" />
           </>
@@ -522,7 +522,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {hasTechnicalProjects && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('projects')}>
-              {sectionTitles.technicalProjects || 'Technical Projects'}
+              {sectionTitles?.technicalProjects || 'Technical Projects'}
             </SectionHeading>
             <ProjectsList projects={projects} filterType="technical" />
           </>
@@ -534,7 +534,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {hasSkills && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('skills')}>
-              {sectionTitles.skills ||
+              {sectionTitles?.skills ||
                 'Platforms, Languages, Technologies & Tools Worked'}
             </SectionHeading>
             <SkillsView skills={skills} type="2page" />
@@ -544,7 +544,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {hasCourses && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('courses')}>
-              {sectionTitles.courses || 'Courses Undertaken'}
+              {sectionTitles?.courses || 'Courses Undertaken'}
             </SectionHeading>
             <CoursesView core={coreCourses} breadth={breadthCourses} />
             <div style={{ marginTop: '3pt', fontSize: '8.5pt', fontStyle: 'italic', color: '#000' }}>
@@ -556,7 +556,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {positions && positions.length > 0 && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('positions')}>
-              {sectionTitles.positions || 'Positions of Responsibility'}
+              {sectionTitles?.positions || 'Positions of Responsibility'}
             </SectionHeading>
             <SimpleEntriesList entries={positions} />
           </>
@@ -565,7 +565,7 @@ export const TwoPageCv: React.FC<{ data: CvData; onSectionClick?: (key: string) 
         {extracurricular && extracurricular.length > 0 && (
           <>
             <SectionHeading onClick={() => onSectionClick && onSectionClick('extracurricular')}>
-              {sectionTitles.extracurricular || 'Extracurricular Activities'}
+              {sectionTitles?.extracurricular || 'Extracurricular Activities'}
             </SectionHeading>
             <SimpleEntriesList entries={extracurricular} />
           </>
