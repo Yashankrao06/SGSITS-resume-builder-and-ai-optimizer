@@ -33,15 +33,22 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
           </button>
           
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20">
-              <GraduationCap className="w-6 h-6 text-amber-300" />
+            <div className="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center border border-white/30 shrink-0 overflow-hidden shadow-sm">
+              <img
+                src="https://www.sgsits.ac.in/assets/be1c60d2202eb5c28d7de018f5546a7b65312d26-B4a0U3sN.png"
+                alt="SGSITS Logo"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/sgsits_official_logo.png';
+                }}
+                className="h-full w-auto object-contain"
+              />
             </div>
             <div>
               <span className="text-[11px] uppercase tracking-wider font-semibold text-blue-200 bg-blue-500/20 px-2 py-0.5 rounded-full border border-blue-400/30">
                 Official Format
               </span>
               <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
-                Academic CV Builder
+                SGSITS Academic CV Builder
               </h2>
             </div>
           </div>
